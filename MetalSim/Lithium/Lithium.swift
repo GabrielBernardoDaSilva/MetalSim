@@ -10,35 +10,35 @@ import MetalKit
 
 class Lithium: NSObject, MTKViewDelegate {
     
-    let vertexBuffer: MTLBuffer
-    let pipelineState: MTLRenderPipelineState
-    let commandQueue: MTLCommandQueue
-    let device: MTLDevice
+    
+    
+    let lithiumDevice: LithiumDevice
+    let lithiumCommandQueue: LithiumCommandQueue
+    let triangle: Triangle
     
     var time: Float = 0.0
     
-    let vertices: [Vertex] = [
-        Vertex(position: [0, 1], color: [0, 0, 1]),
-        Vertex(position: [-1, -1], color: [1, 1, 1]),
-        Vertex(position: [1, -1], color: [1, 0, 0])]
+ 
     
     override init() {
-        device = Self.createMetalDevice()
-        commandQueue = Self.createCommandQueue(with: device)
-        vertexBuffer = Self.createVertexBuffer(for: device, containing: vertices)
+        var lithiumDevice: LithiumDevice = .init()
+        lithiumCommandQueue = LithiumCommandQueue(in: &lithiumDevice)
         
-        let descriptor = Vertex.vertexDescriptor()
-        let library = Self.createDefaultMetalLibrary(with: device)
-        
-        let pipelineDescriptor = MTLRenderPipelineDescriptor()
-        pipelineDescriptor.vertexFunction = library.makeFunction(name: "vertex_main")
-        pipelineDescriptor.fragmentFunction = library.makeFunction(name: "fragment_main")
-        pipelineDescriptor.vertexDescriptor = descriptor
-        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-        
-        
-        pipelineState = Self.createPipelineState(with: device, from: pipelineDescriptor)
-        
+//        vertexBuffer = Self.createVertexBuffer(for: device, containing: vertices)
+//        
+//        let descriptor = Vertex.vertexDescriptor()
+//        let library = Self.createDefaultMetalLibrary(with: device)
+//        
+//        let pipelineDescriptor = MTLRenderPipelineDescriptor()
+//        pipelineDescriptor.vertexFunction = library.makeFunction(name: "vertex_main")
+//        pipelineDescriptor.fragmentFunction = library.makeFunction(name: "fragment_main")
+//        pipelineDescriptor.vertexDescriptor = descriptor
+//        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+//        
+//        
+//        pipelineState = Self.createPipelineState(with: device, from: pipelineDescriptor)
+        triangle = Triangle(with: &lithiumDevice)
+        self.lithiumDevice = lithiumDevice
         super.init()
     }
     
@@ -49,7 +49,8 @@ class Lithium: NSObject, MTKViewDelegate {
         if let drawable = view.currentDrawable,
            let renderPassDescriptor = view.currentRenderPassDescriptor {
             
-            guard let commandBuffer = commandQueue.makeCommandBuffer(),
+            
+            guard let commandBuffer = lithiumCommandQueue.raw.makeCommandBuffer(),
                   let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
                 fatalError("Could not set up objects for render encoding")
             }
@@ -71,8 +72,8 @@ class Lithium: NSObject, MTKViewDelegate {
             
             
             // transform
-            renderEncoder.setRenderPipelineState(pipelineState)
-            renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+            renderEncoder.setRenderPipelineState(triangle.pipelineState.raw)
+            renderEncoder.setVertexBuffer(triangle.vertexBuffer, offset: 0, index: 0)
             renderEncoder.setVertexBytes(&model, length: MemoryLayout<simd_float4x4>.stride, index: 1)
             renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
             

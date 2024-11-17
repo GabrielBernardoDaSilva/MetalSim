@@ -11,13 +11,13 @@ import MetalKit
 struct LithiumShaderLib {
     let raw : MTLLibrary
     
-    init(with device: inout LithiumDevice, _ url: URL){
-        do {
-            let raw = try device.raw.makeLibrary(URL: url)
+    init(with device: inout LithiumDevice, _ path: String){
+        
+            guard let raw =  device.raw.makeDefaultLibrary() else {
+                fatalError("Could not load library at \(path)")
+            }
             self.raw = raw
-        } catch let error {
-            fatalError("Could not load library at \(url): \(error)")
-        }
+      
     }
     
     
