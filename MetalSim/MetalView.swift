@@ -12,9 +12,7 @@ struct MetalView {
     @State private var renderer: Lithium = .init()
     private func makeMetalView() -> MTKView {
         let view = MTKView()
-        
-        view.clearColor = MTLClearColor(red: 0.0, green: 0.0,blue: 0.0,alpha: 1.0)
-        view.clearDepth = 1.0
+
         
         view.device = renderer.lithiumDevice.raw
         view.delegate = renderer

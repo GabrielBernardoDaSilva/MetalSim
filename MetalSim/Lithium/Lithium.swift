@@ -13,36 +13,54 @@ class Lithium: NSObject, MTKViewDelegate {
     
     
     let lithiumDevice: LithiumDevice
-    let lithiumCommandQueue: LithiumCommandQueue
-    let triangle: Triangle
+    let commandQueue: MTLCommandQueue
+    let depthState: MTLDepthStencilState
+    
+    
+    let sceneManager: LithiumSceneManager
+    
+    
+    
     
     var time: Float = 0.0
     
  
     
     override init() {
-        var lithiumDevice: LithiumDevice = .init()
-        lithiumCommandQueue = LithiumCommandQueue(in: &lithiumDevice)
+        lithiumDevice = .init(
+            .bgra8Unorm,
+            .depth32Float
+        )
         
-//        vertexBuffer = Self.createVertexBuffer(for: device, containing: vertices)
-//        
-//        let descriptor = Vertex.vertexDescriptor()
-//        let library = Self.createDefaultMetalLibrary(with: device)
-//        
-//        let pipelineDescriptor = MTLRenderPipelineDescriptor()
-//        pipelineDescriptor.vertexFunction = library.makeFunction(name: "vertex_main")
-//        pipelineDescriptor.fragmentFunction = library.makeFunction(name: "fragment_main")
-//        pipelineDescriptor.vertexDescriptor = descriptor
-//        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-//        
-//        
-//        pipelineState = Self.createPipelineState(with: device, from: pipelineDescriptor)
-        triangle = Triangle(with: &lithiumDevice)
-        self.lithiumDevice = lithiumDevice
+        
+        let depthStencilDescriptor = MTLDepthStencilDescriptor()
+        depthStencilDescriptor.depthCompareFunction = .lessEqual
+        depthStencilDescriptor.isDepthWriteEnabled = true
+        
+        
+        guard let depthState = lithiumDevice.raw.makeDepthStencilState(descriptor: depthStencilDescriptor) else{
+            fatalError("Could not set up depth state")
+        }
+        
+        self.depthState = depthState
+        
+        guard let commandQueue = lithiumDevice.raw.makeCommandQueue() else{
+            fatalError("Could not set up command queue")
+        }
+        self.commandQueue = commandQueue
+        
+        
+    
+        sceneManager = .init(  CornellBoxScene(with: lithiumDevice))
+     
         super.init()
     }
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        view.colorPixelFormat = .bgra8Unorm
+        view.clearColor = MTLClearColor(red: 0.0, green: 0.0,blue: 0.0,alpha: 1.0)
+        view.clearDepth = 1.0
+        view.depthStencilPixelFormat = .depth32Float
     }
     
     func draw(in view: MTKView) {
@@ -50,32 +68,18 @@ class Lithium: NSObject, MTKViewDelegate {
            let renderPassDescriptor = view.currentRenderPassDescriptor {
             
             
-            guard let commandBuffer = lithiumCommandQueue.raw.makeCommandBuffer(),
+            
+            guard let commandBuffer = commandQueue.makeCommandBuffer(),
                   let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
                 fatalError("Could not set up objects for render encoding")
             }
-        
             
-            var model = matrix_float4x4(diagonal: [1, 1, 1, 1])
             
-            model = model.translation([0.0, 0.0, 0.0])
-            model = model.scale([0.1, 0.1, 0.0])
+            renderEncoder.setDepthStencilState(self.depthState)
             
             time += 0.001
             
-            let q = simd_quatf(angle: .pi * time, axis: [1, 0, 0])
-            
-            model = model * simd_float4x4( q)
-            
-            
-            
-            
-            
-            // transform
-            renderEncoder.setRenderPipelineState(triangle.pipelineState.raw)
-            renderEncoder.setVertexBuffer(triangle.vertexBuffer, offset: 0, index: 0)
-            renderEncoder.setVertexBytes(&model, length: MemoryLayout<simd_float4x4>.stride, index: 1)
-            renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
+            sceneManager.run(enconder: renderEncoder, time)
             
             renderEncoder.endEncoding()
             

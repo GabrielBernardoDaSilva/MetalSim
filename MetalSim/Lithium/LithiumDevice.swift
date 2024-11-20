@@ -7,13 +7,33 @@
 
 import MetalKit
 
-struct LithiumDevice{
-    let raw: MTLDevice
+class LithiumDevice {
+    private let _raw: MTLDevice
+    private let _pixelFormat: MTLPixelFormat
+    private let _depthFormat: MTLPixelFormat
     
-    init(){
+    var raw : MTLDevice {
+        get{ return _raw}
+    }
+    
+    var pixelFormat : MTLPixelFormat {
+        get{ return _pixelFormat}
+    }
+    
+    var depthFormat : MTLPixelFormat {
+        get{ return _depthFormat}
+    }
+    
+    
+    
+    
+    init(_ pixelFormat: MTLPixelFormat, _ depthFormat: MTLPixelFormat){
         guard let device = MTLCreateSystemDefaultDevice() else {
             fatalError("Could not create a Metal device.")
         }
-        self.raw = device
+        _raw = device
+        _pixelFormat = pixelFormat
+        _depthFormat = depthFormat
+        
     }
 }
