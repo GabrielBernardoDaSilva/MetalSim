@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4EA9616A2CEF8CAD0055D80E /* project_image.png in Resources */ = {isa = PBXBuildFile; fileRef = 4EA961692CEF8CAD0055D80E /* project_image.png */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4E235C7A2CE52A61006D5097 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		4E235C682CE52A60006D5097 /* MetalSim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MetalSim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E235C792CE52A61006D5097 /* MetalSimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MetalSimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E235C832CE52A61006D5097 /* MetalSimUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MetalSimUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EA961692CEF8CAD0055D80E /* project_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = project_image.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +84,7 @@
 				4E235C7C2CE52A61006D5097 /* MetalSimTests */,
 				4E235C862CE52A61006D5097 /* MetalSimUITests */,
 				4E235C692CE52A60006D5097 /* Products */,
+				4EA961692CEF8CAD0055D80E /* project_image.png */,
 			);
 			sourceTree = "<group>";
 		};
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4EA9616A2CEF8CAD0055D80E /* project_image.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

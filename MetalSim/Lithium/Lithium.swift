@@ -134,7 +134,7 @@ class Lithium: NSObject, MTKViewDelegate {
                 fatalError("Could not set up objects for render encoding")
             }
             
-            time += 0.01
+            time += 0.001
             
             renderEncoder.setDepthStencilState(_depthState)
             
