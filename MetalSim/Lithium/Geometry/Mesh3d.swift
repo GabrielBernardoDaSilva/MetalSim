@@ -76,13 +76,13 @@ class Mesh3d{
     
     var mvp: MVP {
         didSet {
-            let bufferPtr = mvpBuffer.contents()
+            let bufferPtr = _mvpBuffer.contents()
             memcpy(bufferPtr, &mvp, MemoryLayout<MVP>.size)
         }
     }
  
-    private let uniformBuffer: MTLBuffer
-    private let mvpBuffer: MTLBuffer
+    private let _uniformBuffer: MTLBuffer
+    private let _mvpBuffer: MTLBuffer
     private let _camera : PerspectiveCamera?
     
     let material: BlinnPhongMaterial?
@@ -160,7 +160,7 @@ class Mesh3d{
         var uniform = Uniform(time: 0.0)
         memcpy(bufferPtr, &uniform, MemoryLayout<Uniform>.size)
             
-        self.uniformBuffer = uniformBuffer
+        _uniformBuffer = uniformBuffer
         
         
         let mvpSize = MemoryLayout<MVP>.size
@@ -171,9 +171,7 @@ class Mesh3d{
         
         let mvpPtr = mvpBuffer.contents()
         memcpy(mvpPtr, &self.mvp, mvpSize)
-        self.mvpBuffer = mvpBuffer
-        
-        print("Size \(MemoryLayout<MVP>.size)")
+        _mvpBuffer = mvpBuffer
         
         self.light = light
         self.material = material
@@ -200,9 +198,9 @@ extension Mesh3d: LithiumRenderer{
         for mesh in meshes{
             for vertexBuffer in mesh.vertexBuffers{
                 enconder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
-                enconder.setVertexBuffer(mvpBuffer, offset: 0, index: 1)
+                enconder.setVertexBuffer(_mvpBuffer, offset: 0, index: 1)
                 for submesh in mesh.submeshes{
-                    enconder.setFragmentBuffer(self.uniformBuffer, offset: 0, index: 0)
+                    enconder.setFragmentBuffer(_uniformBuffer, offset: 0, index: 0)
                     // send light and material buffer if it has
                     if let light = self.light{
                         enconder.setFragmentBuffer(light.lightBuffer, offset: 0, index: 1)
@@ -236,7 +234,7 @@ extension Mesh3d: LithiumRenderer{
 extension Mesh3d: LithiumUpdateable{
     func update(with time: Float) {
         var uniform = Uniform(time: time)
-        let bufferPtr = uniformBuffer.contents()
+        let bufferPtr = _uniformBuffer.contents()
         memcpy(bufferPtr, &uniform, MemoryLayout<Uniform>.size)
         
     }

@@ -38,7 +38,6 @@ class BlinnPhongMaterial {
         
         baseMaterial = material
         
-        print("Size of BlinnPhongBaseMaterial: \(MemoryLayout<BlinnPhongBaseMaterial>.size)")
         guard let buffer = device.raw.makeBuffer(bytes: &baseMaterial, length: MemoryLayout<BlinnPhongBaseMaterial>.size, options: []) else {
             fatalError("Could not create buffer")
         }

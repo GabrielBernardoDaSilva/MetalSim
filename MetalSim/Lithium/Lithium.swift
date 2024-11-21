@@ -14,7 +14,18 @@ class Lithium: NSObject, MTKViewDelegate {
     
     let lithiumDevice: LithiumDevice
     let commandQueue: MTLCommandQueue
-    let depthState: MTLDepthStencilState
+    
+    private let _depthState: MTLDepthStencilState
+    private var _offscreenRenderTarget: MTLTexture?
+    private var _quad: Quad?
+    private var _renderPassDescriptor: MTLRenderPassDescriptor?
+    
+    
+    var quad: Quad? {
+        get {
+            _quad
+        }
+    }
     
     
     let sceneManager: LithiumSceneManager
@@ -42,7 +53,7 @@ class Lithium: NSObject, MTKViewDelegate {
             fatalError("Could not set up depth state")
         }
         
-        self.depthState = depthState
+        _depthState = depthState
         
         guard let commandQueue = lithiumDevice.raw.makeCommandQueue() else{
             fatalError("Could not set up command queue")
@@ -52,6 +63,10 @@ class Lithium: NSObject, MTKViewDelegate {
         
     
         sceneManager = .init(  CornellBoxScene(with: lithiumDevice))
+        _offscreenRenderTarget = nil
+        _quad = nil
+        _renderPassDescriptor = nil
+        
      
         super.init()
     }
@@ -61,31 +76,94 @@ class Lithium: NSObject, MTKViewDelegate {
         view.clearColor = MTLClearColor(red: 0.0, green: 0.0,blue: 0.0,alpha: 1.0)
         view.clearDepth = 1.0
         view.depthStencilPixelFormat = .depth32Float
+        
+        // create texture
+        
+        print("drawable size: \(view.drawableSize)")
+        
+        var size = (1024, 1024)
+        if !view.drawableSize.equalTo(CGSize(width: 0, height: 0)){
+            size = (Int(view.drawableSize.width), Int(view.drawableSize.height))
+        }
+        
+
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: view.colorPixelFormat, width: size.0 , height: size.1, mipmapped: false)
+        textureDescriptor.usage = [.renderTarget, .shaderRead]
+        
+        guard let texture = lithiumDevice.raw.makeTexture(descriptor: textureDescriptor) else {
+            fatalError("Could not set up texture")
+        }
+        
+        _offscreenRenderTarget = texture
+        _quad = Quad(with: lithiumDevice, texture: texture)
+        _renderPassDescriptor = MTLRenderPassDescriptor()
+        
+        _renderPassDescriptor?.colorAttachments[0].texture = texture
+        _renderPassDescriptor?.colorAttachments[0].loadAction = .clear
+        _renderPassDescriptor?.colorAttachments[0].clearColor = view.clearColor
+        _renderPassDescriptor?.colorAttachments[0].storeAction = .store
+        
+        
+      
+        let depthTextureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.0 , height: size.1, mipmapped: false)
+        depthTextureDescriptor.usage = [.renderTarget]
+        guard let depthTexture = lithiumDevice.raw.makeTexture(descriptor: depthTextureDescriptor) else {
+            fatalError("Could not set up depth texture")
+        }
+    
+        
+        _renderPassDescriptor?.depthAttachment = MTLRenderPassDepthAttachmentDescriptor()
+        _renderPassDescriptor?.depthAttachment?.loadAction = .clear
+        _renderPassDescriptor?.depthAttachment?.clearDepth = view.clearDepth
+        _renderPassDescriptor?.depthAttachment?.clearDepth = 1.0
+        _renderPassDescriptor?.depthAttachment?.storeAction = .dontCare
+        _renderPassDescriptor?.depthAttachment?.texture = depthTexture
+        
+        
+        
+        
+    
     }
     
     func draw(in view: MTKView) {
+        
+        // render scene
+        {
+            guard let commandBuffer = commandQueue.makeCommandBuffer(),
+                  let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: _renderPassDescriptor!) else {
+                fatalError("Could not set up objects for render encoding")
+            }
+            
+            time += 0.01
+            
+            renderEncoder.setDepthStencilState(_depthState)
+            
+            sceneManager.run(enconder: renderEncoder, time)
+            
+            renderEncoder.endEncoding()
+            commandBuffer.commit()
+        }()
+        
+        
+        
+        // render quad
         if let drawable = view.currentDrawable,
            let renderPassDescriptor = view.currentRenderPassDescriptor {
-            
-            
-            
             guard let commandBuffer = commandQueue.makeCommandBuffer(),
                   let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
                 fatalError("Could not set up objects for render encoding")
             }
             
-            
-            renderEncoder.setDepthStencilState(self.depthState)
-            
-            time += 0.001
-            
-            sceneManager.run(enconder: renderEncoder, time)
+            _quad!.render(in: renderEncoder)
             
             renderEncoder.endEncoding()
             
             commandBuffer.present(drawable)
             commandBuffer.commit()
         }
+    
+        
+        
     }
     
     private static func createMetalDevice() -> MTLDevice {
