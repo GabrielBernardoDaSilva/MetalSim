@@ -62,7 +62,7 @@ class Lithium: NSObject, MTKViewDelegate {
         
         
     
-        sceneManager = .init(  CornellBoxScene(with: lithiumDevice))
+        sceneManager = .init(  CornellBoxScene(with: lithiumDevice, depthStencilState: depthState))
         _offscreenRenderTarget = nil
         _quad = nil
         _renderPassDescriptor = nil
@@ -138,7 +138,12 @@ class Lithium: NSObject, MTKViewDelegate {
             
             renderEncoder.setDepthStencilState(_depthState)
             
-            sceneManager.run(enconder: renderEncoder, time)
+            
+            guard let shadowCommandBuffer = commandQueue.makeCommandBuffer() else {
+                fatalError("Could not set up objects for render encoding")
+            }
+            
+            sceneManager.run(enconder: renderEncoder, commandBuffer: shadowCommandBuffer, time)
             
             renderEncoder.endEncoding()
             commandBuffer.commit()

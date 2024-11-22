@@ -6,6 +6,7 @@
 //
 
 import simd
+import MetalKit
 
 class CornellBoxScene: LithiumScene {
 
@@ -19,11 +20,14 @@ class CornellBoxScene: LithiumScene {
     private var _lightPosition = simd_float3(0.0, 2.0, 0.0)
     
     private let _cornellBox: Mesh3d
+    private let _shadowMap: ShadowMap
     
     private var _perspectiveCamera: PerspectiveCamera
     
     
-    required init(with device:  LithiumDevice) {
+    
+    
+    required init(with device:  LithiumDevice, depthStencilState: MTLDepthStencilState) {
         let perspectiveCamera = float4x4(perspectiveWithAspect: 1.0, fovy: .π/5, near: 0.1, far: 100.0)
         let view = float4x4(translate: [0, 0, -8])
                 
@@ -76,11 +80,16 @@ class CornellBoxScene: LithiumScene {
         _cornellBox = cornellBox
         _lightCube = cube
         
+        
+        _shadowMap = ShadowMap(with: device, depthState: depthStencilState, mesh: _cornellBox)
+        _cornellBox.shadowMap = _shadowMap
    
     }
     
     
-    func update(with time: Float) {
+    func update(with time: Float, commandBuffer: MTLCommandBuffer) {
+        
+        _shadowMap.renderShadowPass(commandBuffer: commandBuffer)
         
 
         

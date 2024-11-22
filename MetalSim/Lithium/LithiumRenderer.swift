@@ -21,9 +21,9 @@ protocol LithiumScene: AnyObject {
     var renderable: [LithiumRenderer] { get }
     var updatable: [LithiumUpdateable] { get }
     
-    init(with device: LithiumDevice)
+    init(with device: LithiumDevice, depthStencilState: MTLDepthStencilState)
     
-    func update(with time: Float)
+    func update(with time: Float, commandBuffer: MTLCommandBuffer)
 }
 
 
@@ -36,9 +36,9 @@ struct LithiumSceneManager{
     }
     
     
-    func run(enconder rendererEnconder: MTLRenderCommandEncoder, _ time: Float) {
+    func run(enconder rendererEnconder: MTLRenderCommandEncoder, commandBuffer: MTLCommandBuffer, _ time: Float) {
         for scene in scenes {
-            scene.update(with: time)
+            scene.update(with: time, commandBuffer: commandBuffer)
             
             scene.updatable.forEach {
                 $0.update(with: time)

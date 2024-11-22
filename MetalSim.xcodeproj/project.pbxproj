@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		4EA9616A2CEF8CAD0055D80E /* project_image.png in Resources */ = {isa = PBXBuildFile; fileRef = 4EA961692CEF8CAD0055D80E /* project_image.png */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		4E235C7A2CE52A61006D5097 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -28,10 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		4E235C682CE52A60006D5097 /* MetalSim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MetalSim.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E235C792CE52A61006D5097 /* MetalSimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MetalSimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E235C832CE52A61006D5097 /* MetalSimUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MetalSimUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4EA961692CEF8CAD0055D80E /* project_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = project_image.png; sourceTree = "<group>"; };
+		4E235C682CE52A60006D5097 /* MetalSim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MetalSim.app; path = /Users/gabrielbernardo/Documents/Programs/swift/MetalSim/build/Debug/MetalSim.app; sourceTree = "<absolute>"; };
+		4E235C792CE52A61006D5097 /* MetalSimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MetalSimTests.xctest; path = /Users/gabrielbernardo/Documents/Programs/swift/MetalSim/build/Debug/MetalSim.app/Contents/PlugIns/MetalSimTests.xctest; sourceTree = "<absolute>"; };
+		4E235C832CE52A61006D5097 /* MetalSimUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MetalSimUITests.xctest; path = "/Users/gabrielbernardo/Documents/Programs/swift/MetalSim/build/Debug/MetalSimUITests-Runner.app/Contents/PlugIns/MetalSimUITests.xctest"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -83,19 +78,7 @@
 				4E235C6A2CE52A60006D5097 /* MetalSim */,
 				4E235C7C2CE52A61006D5097 /* MetalSimTests */,
 				4E235C862CE52A61006D5097 /* MetalSimUITests */,
-				4E235C692CE52A60006D5097 /* Products */,
-				4EA961692CEF8CAD0055D80E /* project_image.png */,
 			);
-			sourceTree = "<group>";
-		};
-		4E235C692CE52A60006D5097 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				4E235C682CE52A60006D5097 /* MetalSim.app */,
-				4E235C792CE52A61006D5097 /* MetalSimTests.xctest */,
-				4E235C832CE52A61006D5097 /* MetalSimUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -202,7 +185,7 @@
 			mainGroup = 4E235C5F2CE52A60006D5097;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 4E235C692CE52A60006D5097 /* Products */;
+			productRefGroup = 4E235C5F2CE52A60006D5097;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -218,7 +201,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4EA9616A2CEF8CAD0055D80E /* project_image.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +382,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MetalSim/MetalSim.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -427,6 +410,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MetalSim/MetalSim.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -470,6 +454,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7US7P97PXQ;
@@ -503,6 +488,7 @@
 		4E235C952CE52A61006D5097 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7US7P97PXQ;
@@ -526,7 +512,7 @@
 				4E235C8C2CE52A61006D5097 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		4E235C8D2CE52A61006D5097 /* Build configuration list for PBXNativeTarget "MetalSim" */ = {
 			isa = XCConfigurationList;
@@ -535,7 +521,7 @@
 				4E235C8F2CE52A61006D5097 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		4E235C902CE52A61006D5097 /* Build configuration list for PBXNativeTarget "MetalSimTests" */ = {
 			isa = XCConfigurationList;
@@ -544,7 +530,7 @@
 				4E235C922CE52A61006D5097 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		4E235C932CE52A61006D5097 /* Build configuration list for PBXNativeTarget "MetalSimUITests" */ = {
 			isa = XCConfigurationList;
@@ -553,7 +539,7 @@
 				4E235C952CE52A61006D5097 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

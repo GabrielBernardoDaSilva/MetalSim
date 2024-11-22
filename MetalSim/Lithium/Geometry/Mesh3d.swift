@@ -67,12 +67,20 @@ struct ShaderEntryPoint{
 }
 
 
+enum PiperlineStateType{
+    case shadow
+    case render
+}
+
+
 class Mesh3d{
     
     
     let mdlMesh: [Any]
     let library: MTLLibrary
     let pipelineState: MTLRenderPipelineState
+    private let _shadowPipelineState: MTLRenderPipelineState
+    private var _actualPipelineState: MTLRenderPipelineState
     
     var mvp: MVP {
         didSet {
@@ -80,10 +88,20 @@ class Mesh3d{
             memcpy(bufferPtr, &mvp, MemoryLayout<MVP>.size)
         }
     }
- 
+    
+    var shadowMvp: MVP {
+        didSet {
+            let bufferPtr = _shadowMvpBuffer.contents()
+            memcpy(bufferPtr, &shadowMvp, MemoryLayout<MVP>.size)
+        }
+    }
+    
     private let _uniformBuffer: MTLBuffer
     private let _mvpBuffer: MTLBuffer
+    private let _shadowMvpBuffer: MTLBuffer
     private let _camera : PerspectiveCamera?
+    private var _renderType: PiperlineStateType = .render
+    weak var shadowMap: ShadowMap?
     
     let material: BlinnPhongMaterial?
     let light: BlinnPhongLightModel?
@@ -147,6 +165,22 @@ class Mesh3d{
         guard let pipelineState = try? device.raw.makeRenderPipelineState(descriptor: pipelineDescriptor) else {
             fatalError("Couldn't make render pipeline state")
         }
+        
+        
+        let shadowPipelineDescriptor = MTLRenderPipelineDescriptor()
+        shadowPipelineDescriptor.vertexFunction = library.makeFunction(name: shaderEntryPoint.vertexFunctionName)
+        shadowPipelineDescriptor.fragmentFunction = library.makeFunction(name: shaderEntryPoint.fragmentFunctionName)
+        shadowPipelineDescriptor.vertexDescriptor = MeshObj.meshDescription()
+        shadowPipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
+        shadowPipelineDescriptor.colorAttachments[0].pixelFormat = .invalid
+
+        
+        guard let shadowPipelineState = try? device.raw.makeRenderPipelineState(descriptor: shadowPipelineDescriptor) else {
+            fatalError("Couldn't make render shadow pipeline state")
+        }
+        _shadowPipelineState = shadowPipelineState
+       
+        
         self.pipelineState = pipelineState
         
         self.mvp = mvp
@@ -169,6 +203,10 @@ class Mesh3d{
             fatalError("Couldn't allocate mvp buffer")
         }
         
+        guard let shadowMvpBuffer = device.raw.makeBuffer(length: mvpSize, options: [.cpuCacheModeWriteCombined]) else{
+            fatalError("Couldn't allocate mvp buffer")
+        }
+        
         let mvpPtr = mvpBuffer.contents()
         memcpy(mvpPtr, &self.mvp, mvpSize)
         _mvpBuffer = mvpBuffer
@@ -176,11 +214,31 @@ class Mesh3d{
         self.light = light
         self.material = material
         _camera = camera
+        
+        _actualPipelineState = pipelineState
+        
+        
+        self.shadowMvp = mvp
+        let shadowMvpPtr = shadowMvpBuffer.contents()
+        memcpy(shadowMvpPtr, &self.shadowMvp, MemoryLayout<MVP>.size)
+        
+        _shadowMvpBuffer = shadowMvpBuffer
 
         
     }
     
-    
+    func changePipelineState(type: PiperlineStateType){
+        switch type{
+        case .shadow:
+            _actualPipelineState = _shadowPipelineState
+            _renderType = .shadow
+        case .render:
+            _actualPipelineState = pipelineState
+            _renderType = .render
+        @unknown default:
+            fatalError("Unknown PiperlineStateType")
+        }
+    }
     
     
 }
@@ -194,11 +252,19 @@ extension Mesh3d: LithiumRenderer{
         }
         enconder.setCullMode(.none)
         enconder.setFrontFacing(.clockwise)
-        enconder.setRenderPipelineState(pipelineState)
+        enconder.setRenderPipelineState(_actualPipelineState)
         for mesh in meshes{
             for vertexBuffer in mesh.vertexBuffers{
                 enconder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
-                enconder.setVertexBuffer(_mvpBuffer, offset: 0, index: 1)
+                if _renderType == .shadow{
+                    enconder.setVertexBuffer(_shadowMvpBuffer, offset: 0, index: 1)
+                }else {
+                    enconder.setVertexBuffer(_mvpBuffer, offset: 0, index: 1)
+                    
+                }
+                
+     
+                
                 for submesh in mesh.submeshes{
                     enconder.setFragmentBuffer(_uniformBuffer, offset: 0, index: 0)
                     // send light and material buffer if it has
@@ -213,6 +279,9 @@ extension Mesh3d: LithiumRenderer{
                     if let camera = self._camera{
                         enconder.setFragmentBuffer(camera.cameraBuffer, offset: 0, index: 3)
                     }
+                    
+                    enconder.setFragmentBuffer(_shadowMvpBuffer, offset: 0, index: 4)
+                    enconder.setFragmentTexture(shadowMap?.shadowMap, index: 0)
                     
                     enconder.drawIndexedPrimitives(type: submesh.primitiveType,
                                                    indexCount: submesh.indexCount,

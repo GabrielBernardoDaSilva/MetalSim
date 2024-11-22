@@ -58,7 +58,16 @@ vertex FragmentInput vertex_mesh_main(Vertex v [[stage_in]], constant MVP &mvp [
     };
 }
 
-fragment float4 fragment_mesh_main(FragmentInput in [[stage_in]], constant Uniform& uniform [[buffer(0)]], constant Light& light [[buffer(1)]], constant BlinnPhongBaseMaterial& material [[buffer(2)]], constant Camera& camera [[buffer(3)]]) {
+fragment float4 fragment_mesh_main(FragmentInput in [[stage_in]],
+                                   constant Uniform& uniform [[buffer(0)]],
+                                   constant Light& light [[buffer(1)]],
+                                   constant BlinnPhongBaseMaterial& material [[buffer(2)]],
+                                   constant Camera& camera [[buffer(3)]],
+                                   constant MVP& shadowMvp [[buffer(4)]],
+                                   texture2d<float> shadowMap [[texture(0)]]) {
+    
+    constexpr sampler colorSampler(mip_filter::linear, mag_filter::linear, min_filter::linear, address::repeat);
+
     
     constexpr float3 cameraPosition = float3(0, 0, -8);
     
@@ -94,9 +103,28 @@ fragment float4 fragment_mesh_main(FragmentInput in [[stage_in]], constant Unifo
     
     float3 specular = specularColor  * spec;
     
-    float3 color = ambient + diffuse + specular;
     
+    
+    float4 positionInLightSpace = shadowMvp.projection * shadowMvp.view * float4(in.worldPosition, 1.0);
+    positionInLightSpace.xyz /= positionInLightSpace.w;
+    float2 lightSpaceCoord = positionInLightSpace.xy * 0.5 + 0.5;
+    lightSpaceCoord.y = 1.0 - lightSpaceCoord.y;
+    float lightDepth = shadowMap.sample(colorSampler, lightSpaceCoord).x;
+    float visibility = 1.0;
+    if (positionInLightSpace.z > lightDepth)
+        visibility = 0.0;
+    
+    float3 color = ambient + (diffuse + specular) * visibility;
     
     return float4(color, 1.0);
 }
 
+
+
+
+vertex float4 shadowVertexFunction(Vertex in [[stage_in]], constant MVP &mvp [[buffer(1)]]){
+    return mvp.projection * mvp.view * mvp.model * float4(in.position, 1.0);
+}
+
+
+fragment void shadowFragmentFunction(){}
